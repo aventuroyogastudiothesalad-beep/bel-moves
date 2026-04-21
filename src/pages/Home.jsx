@@ -25,17 +25,23 @@ export default function Home() {
     const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen bg-[#07070c] text-neutral-100 overflow-x-hidden">
+     <div className="min-h-screen bg-[#07070c] text-neutral-100 overflow-x-hidden">
 
       {/* HERO */}
-      <div className="relative min-h-[92vh] flex items-end px-6 md:px-16 pb-16">
-        <div className="absolute inset-0 grid grid-cols-3 gap-1 opacity-70">
-          <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1200&q=80" className="w-full h-full object-cover" />
-          <img src="https://images.unsplash.com/photo-1593810450967-f9c42742e326?auto=format&fit=crop&w=1200&q=80" className="w-full h-full object-cover scale-110" />
-          <img src="https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=1200&q=80" className="w-full h-full object-cover" />
+      <div className="relative min-h-[92vh] flex items-end px-6 md:px-16 pb-16 overflow-hidden">
+        <div className="absolute inset-0 grid grid-cols-3 gap-1 opacity-70 h-full">
+          <img src="/images/image1bailarinPichon.jpeg" className="w-full h-full object-cover" alt="Isabel in posa del Piccione e ballerina"/>
+          <img src="/images/Scorpion.jpeg" className="w-full h-full object-cover" alt="Isabel in posa Scorpion" />
+          <img src="/images/image2bailarinpichon.jpeg" className="w-full h-full object-cover" alt="Isabel in posa del Piccione e ballerina altra vista" />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-tr from-pink-500/20 via-transparent to-cyan-400/20" />
+        {/* <div className="absolute inset-0 bg-gradient-to-tr from-pink-500/20 via-transparent to-cyan-400/20" /> */}
+        <div className="absolute inset-0 h-full bg-gradient-to-tr from-pink-500/20 via-transparent to-cyan-400/20" />
+        {/* cambio colori */}
         <div className="absolute inset-0 bg-black/50" />
+        {/* <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-pink-500/20 via-black/40 to-cyan-400/20" /> */}
+         {/* 🔥 overlay SOLO sopra */}
+  <div className="absolute top-0 left-0 w-full h-[200px] bg-gradient-to-b from-black/70 to-transparent z-10" />
 
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -83,13 +89,16 @@ export default function Home() {
         <div className="grid md:grid-cols-3 gap-6">
           {offerings.map((item, i) => (
             <motion.div
-              key={item.title}
-              whileHover={{ scale: 1.04, rotate: i % 2 === 0 ? 1 : -1 }}
-              className={`p-6 rounded-xl border border-white/10 bg-gradient-to-br ${item.color} backdrop-blur`}
-            >
+  key={item.title}
+  whileHover={{ scale: 1.05 }}
+  whileTap={{ scale: 0.98 }}
+  onClick={() => navigate(`/classes?type=${encodeURIComponent(item.title)}`)}
+  className={`cursor-pointer p-6 rounded-xl border border-white/10 bg-gradient-to-br ${item.color} backdrop-blur transition`}
+>
               <h3 className="text-2xl font-semibold mb-2 text-white">{item.title}</h3>
               <p className="text-neutral-200 text-sm leading-relaxed">{item.desc}</p>
             </motion.div>
+            
           ))}
         </div>
       </section>
@@ -103,8 +112,8 @@ export default function Home() {
           </p>
         </div>
         <img
-          src="https://images.unsplash.com/photo-1520975693411-35a8f7b3b6f5?auto=format&fit=crop&w=1200&q=80"
-          className="md:col-span-2 rounded-xl shadow-lg object-cover"
+          src="/images/Wildthing.png"
+          className="md:col-span-2 rounded-xl shadow-lg object-cover" alt="Isabel into wildthing"
         />
       </section>
 

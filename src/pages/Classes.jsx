@@ -1,9 +1,18 @@
 import { motion } from "framer-motion"
 import { useNavigate } from "react-router-dom"
 import { classes } from "../data/classes"
+import { useLocation } from "react-router-dom"
 
 export default function Classes() {
-  const navigate = useNavigate()
+const location = useLocation()
+const navigate = useNavigate()
+
+const params = new URLSearchParams(location.search)
+const selectedType = params.get("type")
+
+const filteredClasses = selectedType
+  ? classes.filter((item) => item.title === selectedType)
+  : classes
   return (
     <div className="min-h-screen bg-[#07070c] text-neutral-100 overflow-x-hidden">
 
@@ -30,10 +39,24 @@ export default function Classes() {
         </motion.div>
       </div>
 
+      {selectedType && (
+  <button
+    onClick={() => navigate("/classes")}
+    className="mb-6 text-sm text-cyan-300 underline"
+  >
+    ← View all classes
+  </button>
+)}
+
       {/* GRID */}
       <section className="max-w-6xl mx-auto px-6 pb-24">
+         {selectedType && filteredClasses.length === 0 && (
+    <div className="text-center text-neutral-400 py-20">
+      No classes found for "{selectedType}"
+    </div>
+  )}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {classes.map((item, i) => (
+          {filteredClasses.map((item, i) => (
             <motion.div
               key={item.id}
               initial={{ opacity: 0, y: 20 }}
