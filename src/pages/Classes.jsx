@@ -3,6 +3,14 @@ import { useNavigate, useLocation } from "react-router-dom"
 import { useEffect, useState } from "react"
 import { client } from "../lib/sanity"
 
+const colors = [
+  "from-pink-500/20 to-orange-400/10",
+  "from-blue-400/20 to-cyan-300/10",
+  "from-purple-500/20 to-fuchsia-400/10",
+  "from-emerald-400/20 to-teal-300/10",
+  "from-yellow-400/20 to-orange-300/10",
+]
+
 export default function Classes() {
   const [classes, setClasses] = useState([])
   const [loading, setLoading] = useState(true)
@@ -63,13 +71,6 @@ export default function Classes() {
         </motion.div>
       </div>
 
-      {/* FILTER EMPTY STATE */}
-      {selectedType && filteredClasses.length === 0 && (
-        <div className="text-center text-neutral-400 py-20">
-          No classes found for "{selectedType}"
-        </div>
-      )}
-
       {/* GRID */}
       <section className="max-w-6xl mx-auto px-6 pb-24">
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -80,7 +81,7 @@ export default function Classes() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
               whileHover={{ scale: 1.02 }}
-              className="p-6 rounded-xl border border-white/10 backdrop-blur flex flex-col gap-4 bg-gradient-to-br"
+              className={`p-6 rounded-xl border border-white/10 backdrop-blur flex flex-col gap-4 bg-gradient-to-br ${colors[i % colors.length]}`}
             >
               <div className="flex justify-between items-start">
                 <span className="text-xs uppercase tracking-widest text-neutral-400">
