@@ -137,19 +137,32 @@ export default function Book() {
             />
 
             {/* CLASS SELECT */}
-            <select
+            {/* <select
               name="classId"
               value={form.classId}
               onChange={handleChange}
               className="bg-white/5 border border-white/10 rounded-xl px-5 py-4"
-            >
-              <option value="">Select a class</option>
+            > */}
 
-              {classes.map((c) => (
-                <option key={c._id} value={c._id}>
-                  {c.title} — {c.schedule}
-                </option>
-              ))}
+              <select
+  name="classId"
+  value={form.classId}
+  onChange={handleChange}
+  className="bg-[#07070c] border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-pink-500/50 transition-colors"
+>
+              <option value="" disabled className="bg-[#07070c] text-white">
+  Select a class...
+</option>
+
+{classes.map((c) => (
+  <option
+    key={c._id}
+    value={c._id}
+    className="bg-[#07070c] text-white"
+  >
+    {c.title}
+  </option>
+))}
 
             </select>
 
