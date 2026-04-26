@@ -3,13 +3,10 @@ import { useNavigate, useLocation } from "react-router-dom"
 import { useEffect, useState } from "react"
 import { client } from "../lib/sanity"
 
-const colors = [
-  "from-pink-500/20 to-orange-400/10",
-  "from-blue-400/20 to-cyan-300/10",
-  "from-purple-500/20 to-fuchsia-400/10",
-  "from-emerald-400/20 to-teal-300/10",
-  "from-yellow-400/20 to-orange-300/10",
-]
+const getColor = (type) => {
+  if (type === "online") return "from-cyan-500/20 to-blue-400/10"
+  return "from-pink-500/20 to-orange-400/10"
+}
 
 export default function Classes() {
   const [classes, setClasses] = useState([])
@@ -23,7 +20,19 @@ export default function Classes() {
 
   useEffect(() => {
     client
-      .fetch(`*[_type == "class"]`)
+      .fetch(`
+        *[_type == "class"] | order(title asc){
+          _id,
+          title,
+          description,
+          price,
+          level,
+          duration,
+          schedule,
+          type,
+          zoomLink
+        }
+      `)
       .then((data) => {
         setClasses(data)
         setLoading(false)
@@ -31,7 +40,7 @@ export default function Classes() {
   }, [])
 
   const filteredClasses = selectedType
-    ? classes.filter((item) => item.title === selectedType)
+    ? classes.filter((item) => item.type === selectedType)
     : classes
 
   if (loading) {
@@ -74,49 +83,76 @@ export default function Classes() {
       {/* GRID */}
       <section className="max-w-6xl mx-auto px-6 pb-24">
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredClasses.map((item, i) => (
-            <motion.div
-              key={item._id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-              whileHover={{ scale: 1.02 }}
-              className={`p-6 rounded-xl border border-white/10 backdrop-blur flex flex-col gap-4 bg-gradient-to-br ${colors[i % colors.length]}`}
-            >
-              <div className="flex justify-between items-start">
-                <span className="text-xs uppercase tracking-widest text-neutral-400">
-                  {item.level}
-                </span>
-                <span className="text-2xl font-semibold text-white">
-                  {item.price}
-                </span>
-              </div>
 
-              <div>
-                <h3 className="text-2xl font-semibold text-white mb-1">
-                  {item.title}
-                </h3>
-                <p className="text-neutral-300 text-sm leading-relaxed">
-                  {item.description}
-                </p>
-              </div>
+          {filteredClasses.map((item, i) => {
+            const isOnline = item.type === "online"
 
-              <div className="flex flex-col gap-1 text-xs text-neutral-400">
-                <span>⏱ {item.duration}</span>
-                <span>📅 {item.schedule}</span>
-              </div>
-
-              <button
-                onClick={() => navigate(`/book?class=${item._id}`)}
-                className="mt-auto rounded-full px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm transition-colors"
+            return (
+              <motion.div
+                key={item._id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.08 }}
+                whileHover={{ scale: 1.02 }}
+                className={`p-6 rounded-xl border border-white/10 backdrop-blur flex flex-col gap-4 bg-gradient-to-br ${getColor(item.type)}`}
               >
-                Book this class →
-              </button>
-            </motion.div>
-          ))}
+
+                {/* TOP */}
+                <div className="flex justify-between items-start">
+                  <span className="text-xs uppercase tracking-widest text-neutral-400">
+                    {item.level}
+                  </span>
+
+                  <span className="text-2xl font-semibold text-white">
+                    {item.price}
+                  </span>
+                </div>
+
+                {/* TYPE BADGE */}
+                <div>
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    isOnline
+                      ? "bg-cyan-400/20 text-cyan-200"
+                      : "bg-pink-400/20 text-pink-200"
+                  }`}>
+                    {isOnline ? "ONLINE" : "IN STUDIO"}
+                  </span>
+                </div>
+
+                {/* CONTENT */}
+                <div>
+                  <h3 className="text-2xl font-semibold text-white mb-1">
+                    {item.title}
+                  </h3>
+                  <p className="text-neutral-300 text-sm leading-relaxed">
+                    {item.description}
+                  </p>
+                </div>
+
+                {/* META */}
+                <div className="flex flex-col gap-1 text-xs text-neutral-400">
+                  <span>⏱ {item.duration}</span>
+                  <span>📅 {item.schedule}</span>
+                </div>
+
+                {/* CTA */}
+                <button
+                  onClick={() =>
+                    isOnline && item.zoomLink
+                      ? window.open(item.zoomLink, "_blank")
+                      : navigate(`/book?class=${item._id}`)
+                  }
+                  className="mt-auto rounded-full px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm transition-colors"
+                >
+                  {isOnline ? "Join live →" : "Book this class →"}
+                </button>
+
+              </motion.div>
+            )
+          })}
+
         </div>
       </section>
-
     </div>
   )
 }
