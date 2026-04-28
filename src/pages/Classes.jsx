@@ -1,5 +1,5 @@
 import { motion } from "framer-motion"
-import { useNavigate, useLocation } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { useEffect, useState } from "react"
 import { client } from "../lib/sanity"
 
@@ -11,12 +11,9 @@ const getColor = (type) => {
 export default function Classes() {
   const [classes, setClasses] = useState([])
   const [loading, setLoading] = useState(true)
+  const [filter, setFilter] = useState("all")
 
   const navigate = useNavigate()
-  const location = useLocation()
-
-  const params = new URLSearchParams(location.search)
-  const selectedType = params.get("type")
 
   useEffect(() => {
     client
@@ -39,9 +36,10 @@ export default function Classes() {
       })
   }, [])
 
-  const filteredClasses = selectedType
-    ? classes.filter((item) => item.type === selectedType)
-    : classes
+  const filteredClasses =
+    filter === "all"
+      ? classes
+      : classes.filter((item) => item.type === filter)
 
   if (loading) {
     return (
@@ -62,7 +60,7 @@ export default function Classes() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="relative z-10 max-w-6xl mx-auto"
+          className="relative z-10 max-w-6xl mx-auto text-center"
         >
           <p className="uppercase tracking-[0.4em] text-xs mb-4 text-cyan-200">
             London • Shoreditch
@@ -74,9 +72,49 @@ export default function Classes() {
             </span>
           </h1>
 
-          <p className="mt-6 text-lg text-neutral-300 max-w-xl leading-relaxed">
+          <p className="mt-6 text-lg text-neutral-300 max-w-xl mx-auto leading-relaxed">
             Every class is a drop-in. No membership. No commitment. Just show up and move.
           </p>
+
+          {/* FILTER PILLS */}
+          <div className="mt-10 flex justify-center">
+            <div className="flex gap-2 p-1 rounded-full bg-white/5 border border-white/10 backdrop-blur">
+
+              <button
+                onClick={() => setFilter("all")}
+                className={`px-5 py-2 text-xs uppercase tracking-widest rounded-full transition-all ${
+                  filter === "all"
+                    ? "bg-white text-black shadow-[0_0_25px_rgba(255,255,255,0.25)]"
+                    : "text-neutral-400 hover:text-white"
+                }`}
+              >
+                All
+              </button>
+
+              <button
+                onClick={() => setFilter("online")}
+                className={`px-5 py-2 text-xs uppercase tracking-widest rounded-full transition-all ${
+                  filter === "online"
+                    ? "bg-cyan-400 text-black shadow-[0_0_25px_rgba(34,211,238,0.5)]"
+                    : "text-neutral-400 hover:text-cyan-300"
+                }`}
+              >
+                Online
+              </button>
+
+              <button
+                onClick={() => setFilter("in_person")}
+                className={`px-5 py-2 text-xs uppercase tracking-widest rounded-full transition-all ${
+                  filter === "in_person"
+                    ? "bg-pink-400 text-black shadow-[0_0_25px_rgba(244,114,182,0.5)]"
+                    : "text-neutral-400 hover:text-pink-300"
+                }`}
+              >
+                Studio
+              </button>
+
+            </div>
+          </div>
         </motion.div>
       </div>
 
@@ -93,7 +131,7 @@ export default function Classes() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.08 }}
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ scale: 1.03 }}
                 className={`p-6 rounded-xl border border-white/10 backdrop-blur flex flex-col gap-4 bg-gradient-to-br ${getColor(item.type)}`}
               >
 
@@ -108,16 +146,14 @@ export default function Classes() {
                   </span>
                 </div>
 
-                {/* TYPE BADGE */}
-                <div>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    isOnline
-                      ? "bg-cyan-400/20 text-cyan-200"
-                      : "bg-pink-400/20 text-pink-200"
-                  }`}>
-                    {isOnline ? "ONLINE" : "IN STUDIO"}
-                  </span>
-                </div>
+                {/* BADGE */}
+                <span className={`text-xs px-2 py-1 rounded-full w-fit ${
+                  isOnline
+                    ? "bg-cyan-400/20 text-cyan-200"
+                    : "bg-pink-400/20 text-pink-200"
+                }`}>
+                  {isOnline ? "ONLINE" : "IN STUDIO"}
+                </span>
 
                 {/* CONTENT */}
                 <div>
@@ -144,7 +180,7 @@ export default function Classes() {
                   }
                   className="mt-auto rounded-full px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm transition-colors"
                 >
-                  {isOnline ? "Join live →" : "Book this class →"}
+                  {isOnline ? "Join live class →" : "Reserve your spot →"}
                 </button>
 
               </motion.div>
