@@ -7,7 +7,7 @@ import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
 
-// ─── STRIPE FORM (inner component) ───────────────────────────────────────────
+// ─── STRIPE FORM ─────────────────────────────────────────────────────────────
 function CheckoutForm({ onSuccess }) {
   const stripe = useStripe()
   const elements = useElements()
@@ -37,13 +37,11 @@ function CheckoutForm({ onSuccess }) {
   return (
     <form onSubmit={handlePay} className="flex flex-col gap-5 mt-6">
       <PaymentElement />
-      {error && (
-        <p className="text-red-400 text-sm">{error}</p>
-      )}
+      {error && <p className="text-red-400 text-sm">{error}</p>}
       <button
         type="submit"
         disabled={paying || !stripe}
-        className="rounded-full px-8 py-4 bg-gradient-to-r from-pink-500 to-orange-400 text-black font-semibold disabled:opacity-50"
+        className="rounded-full px-8 py-4 bg-gradient-to-r from-pink-500 to-orange-400 text-black font-semibold disabled:opacity-50 cursor-pointer hover:opacity-90 transition-opacity"
       >
         {paying ? "Processing..." : "Pay now →"}
       </button>
@@ -51,7 +49,7 @@ function CheckoutForm({ onSuccess }) {
   )
 }
 
-// ─── MAIN BOOK COMPONENT ──────────────────────────────────────────────────────
+// ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function Book() {
   const location = useLocation()
   const params = new URLSearchParams(location.search)
@@ -63,6 +61,7 @@ export default function Book() {
   const [loadingPayment, setLoadingPayment] = useState(false)
   const [isFree, setIsFree] = useState(false)
   const [error, setError] = useState(null)
+  const [formErrors, setFormErrors] = useState({})
 
   const [form, setForm] = useState({
     name: "",
@@ -85,7 +84,7 @@ export default function Book() {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
-    // reset payment if class changes
+    setFormErrors({ ...formErrors, [e.target.name]: null })
     if (e.target.name === "classId") {
       setClientSecret(null)
       setIsFree(false)
@@ -96,11 +95,22 @@ export default function Book() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!form.name || !form.email || !form.classId) return
 
+    // validazione
+    const errors = {}
+    if (!form.name) errors.name = "Name is required"
+    if (!form.email) errors.email = "Email is required"
+    if (!form.classId) errors.classId = "Please select a class"
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors)
+      return
+    }
+
+    setFormErrors({})
     setError(null)
 
-    // caso FREE o senza prezzo
+    // caso FREE
     if (!selectedClass?.priceAmount) {
       setIsFree(true)
       setSubmitted(true)
@@ -170,10 +180,10 @@ export default function Book() {
         </motion.div>
       </div>
 
-      {/* FORM / PAYMENT / SUCCESS */}
+      {/* CONTENT */}
       <section className="max-w-2xl mx-auto px-6 pb-24">
 
-        {/* ── SUCCESS ── */}
+        {/* SUCCESS */}
         {submitted ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -186,9 +196,7 @@ export default function Book() {
             </h2>
             <p className="text-neutral-300">
               Thanks <span className="text-pink-300">{form.name}</span>!{" "}
-              {isFree
-                ? "Isabel will contact you at "
-                : "A receipt has been sent to "}
+              {isFree ? "Isabel will contact you at " : "A receipt has been sent to "}
               <span className="text-cyan-300">{form.email}</span>.
             </p>
             <button
@@ -198,7 +206,7 @@ export default function Book() {
                 setIsFree(false)
                 setForm({ name: "", email: "", classId: "", message: "" })
               }}
-              className="mt-8 rounded-full px-6 py-3 border border-white/20 text-neutral-300 hover:text-white"
+              className="mt-8 rounded-full px-6 py-3 border border-white/20 text-neutral-300 hover:text-white cursor-pointer transition-colors"
             >
               Book another class
             </button>
@@ -206,7 +214,7 @@ export default function Book() {
 
         ) : clientSecret ? (
 
-          /* ── STRIPE PAYMENT ── */
+          /* STRIPE */
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -223,7 +231,7 @@ export default function Book() {
 
             <button
               onClick={() => setClientSecret(null)}
-              className="mt-4 text-sm text-neutral-500 hover:text-neutral-300"
+              className="mt-4 text-sm text-neutral-500 hover:text-neutral-300 cursor-pointer transition-colors"
             >
               ← Back
             </button>
@@ -231,53 +239,84 @@ export default function Book() {
 
         ) : (
 
-          /* ── BOOKING FORM ── */
-          <motion.form
-            onSubmit={handleSubmit}
-            className="flex flex-col gap-5"
-          >
-            <input
-              type="text"
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              placeholder="Your name"
-              className="bg-white/5 border border-white/10 rounded-xl px-5 py-4"
-            />
-            <input
-              type="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              placeholder="Email"
-              className="bg-white/5 border border-white/10 rounded-xl px-5 py-4"
-            />
+          /* FORM */
+          <motion.form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
-            <select
-              name="classId"
-              value={form.classId}
-              onChange={handleChange}
-              className="bg-[#07070c] border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-pink-500/50 transition-colors"
-            >
-              <option value="" disabled className="bg-[#07070c] text-white">
-                Select a class...
-              </option>
-              {classes.map((c) => (
-                <option key={c._id} value={c._id} className="bg-[#07070c] text-white">
-                  {c.title} {c.price ? `— ${c.price}` : ""}
+            {/* NAME */}
+            <div className="flex flex-col gap-1">
+              <input
+                type="text"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                placeholder="Your name *"
+                className={`bg-white/5 border rounded-xl px-5 py-4 w-full outline-none transition-colors text-white placeholder:text-neutral-500 ${
+                  formErrors.name
+                    ? "border-red-500 focus:border-red-400"
+                    : "border-white/10 focus:border-pink-500/50"
+                }`}
+              />
+              {formErrors.name && (
+                <p className="text-red-400 text-xs pl-1">{formErrors.name}</p>
+              )}
+            </div>
+
+            {/* EMAIL */}
+            <div className="flex flex-col gap-1">
+              <input
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="Email *"
+                className={`bg-white/5 border rounded-xl px-5 py-4 w-full outline-none transition-colors text-white placeholder:text-neutral-500 ${
+                  formErrors.email
+                    ? "border-red-500 focus:border-red-400"
+                    : "border-white/10 focus:border-pink-500/50"
+                }`}
+              />
+              {formErrors.email && (
+                <p className="text-red-400 text-xs pl-1">{formErrors.email}</p>
+              )}
+            </div>
+
+            {/* CLASS */}
+            <div className="flex flex-col gap-1">
+              <select
+                name="classId"
+                value={form.classId}
+                onChange={handleChange}
+                className={`bg-[#07070c] border rounded-xl px-5 py-4 text-white outline-none transition-colors ${
+                  formErrors.classId
+                    ? "border-red-500 focus:border-red-400"
+                    : "border-white/10 focus:border-pink-500/50"
+                }`}
+              >
+                <option value="" disabled className="bg-[#07070c] text-neutral-500">
+                  Select a class... *
                 </option>
-              ))}
-            </select>
+                {classes.map((c) => (
+                  <option key={c._id} value={c._id} className="bg-[#07070c] text-white">
+                    {c.title} {c.price ? `— ${c.price}` : ""}
+                  </option>
+                ))}
+              </select>
+              {formErrors.classId && (
+                <p className="text-red-400 text-xs pl-1">{formErrors.classId}</p>
+              )}
+            </div>
 
+            {/* MESSAGE */}
             <textarea
               name="message"
               value={form.message}
               onChange={handleChange}
               placeholder="Message (optional)"
-              className="bg-white/5 border border-white/10 rounded-xl px-5 py-4"
+              rows={3}
+              className="bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white placeholder:text-neutral-500 outline-none focus:border-pink-500/50 transition-colors resize-none"
             />
 
-            {/* mostra prezzo selezionato */}
+            {/* PREZZO */}
             {selectedClass && (
               <div className="text-sm text-neutral-400 px-1">
                 {selectedClass.priceAmount
@@ -289,10 +328,11 @@ export default function Book() {
 
             {error && <p className="text-red-400 text-sm">{error}</p>}
 
+            {/* BUTTON */}
             <button
               type="submit"
               disabled={loadingPayment}
-              className="rounded-full px-8 py-4 bg-gradient-to-r from-pink-500 to-orange-400 text-black font-semibold disabled:opacity-50"
+              className="rounded-full px-8 py-4 bg-gradient-to-r from-pink-500 to-orange-400 text-black font-semibold disabled:opacity-50 cursor-pointer hover:opacity-90 transition-opacity"
             >
               {loadingPayment
                 ? "Loading..."
